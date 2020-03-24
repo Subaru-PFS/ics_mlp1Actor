@@ -1,0 +1,5 @@
+setupRequired(tron_actorcore)
+setupRequired(ics_mac_mlp1)
+
+pathPrepend(PATH, ${PRODUCT_DIR}/bin)
+pathPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)
