@@ -6,6 +6,7 @@ from actorcore.ICC import ICC
 from mlp1Actor.mlp1 import AGState
 from mlp1Actor.ag import Ag
 from mlp1Actor.agcam import Agcam
+from mlp1Actor.pfilamps import Pfilamps
 from mlp1Actor.vlan import Vlan
 
 
@@ -57,13 +58,15 @@ class Mlp1Actor(ICC):
             self.agstate = AGState()
             self.ag = Ag(actor=self, logger=self.logger)
             self.agcam = Agcam(actor=self, logger=self.logger)
+            self.pfilamps = Pfilamps(actor=self, logger=self.logger)
             self.vlan = Vlan(actor=self, logger=self.logger)
             #self.mlp1 = Mlp1(actor=self, logger=self.logger)
 
-            _models = ('ag', 'agcam', 'vlan',)
+            _models = ('ag', 'agcam', 'pfilamps', 'vlan',)
             self.addModels(_models)
             self.models['ag'].keyVarDict['guideReady'].addCallback(self.ag.receiveStatusKeys, callNow=False)
             self.models['agcam'].keyVarDict['exposureState'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
+            self.models['pfilamps'].keyVarDict['lampStatus'].addCallback(self.pfilamps.receiveStatusKeys, callNow=False)
             for key in ('vgw', 'tws1', 'tws2'):
                 self.models['vlan'].keyVarDict[key].addCallback(self.vlan.receiveStatusKeys, callNow=False)
 
