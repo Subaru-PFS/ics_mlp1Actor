@@ -53,20 +53,21 @@ class Mlp1Cmd(object):
         try:
             if 'altaz' in cmd.cmd.keywords:
                 daz = float(cmd.cmd.keywords['altaz'].values[0])
-                _del = float(cmd.cmd.keywords['altaz'].values[1])
+                dalt = float(cmd.cmd.keywords['altaz'].values[1])
                 if daz < -60.0 or 60.0 < daz:
-                    cmd.fail('text="set_offsets: daz={}"'.format(daz))
-                if _del < -60.0 or 60.0 < _del:
-                    cmd.fail('text="set_offsets: del={}"'.format(_del))
-                self.actor.agstate.star_posn_error_azel = daz, _del
+                    raise RuntimeError('daz={}'.format(daz))
+                if dalt < -60.0 or 60.0 < dalt:
+                    raise RuntimeError('dalt={}'.format(dalt))
+                self.actor.agstate.star_posn_error_azel = daz, dalt
             if 'xy' in cmd.cmd.keywords:
                 dx = float(cmd.cmd.keywords['xy'].values[0])
                 dy = float(cmd.cmd.keywords['xy'].values[1])
                 if dx < -999999.99 or 999999.99 < dx:
-                    cmd.fail('text="set_offsets: dx={}"'.format(x))
+                    raise RuntimeError('dx={}'.format(dx))
                 if dy < -999999.99 or 999999.99 < dy:
-                    cmd.fail('text="set_offsets: dy={}"'.format(y))
+                    raise RuntimeError('dy={}'.format(dy))
                 self.actor.agstate.star_posn_error_xy = dx, dy
         except Exception as e:
             cmd.fail('text="set_offsets: {}"'.format(e))
+            return
         cmd.finish()
