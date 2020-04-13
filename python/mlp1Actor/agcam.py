@@ -26,3 +26,27 @@ class Agcam(object):
                 self.agstate.exposure_on = True
             elif state == 'done':
                 self.agstate.exposure_on = False
+        elif all((key.name == 'cameraState1', key.isCurrent, key.isGenuine)):
+            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
+            self.agstate.ccd1_used = used
+            self.agstate.ccd1_alarm = alarm
+        elif all((key.name == 'cameraState2', key.isCurrent, key.isGenuine)):
+            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
+            self.agstate.ccd2_used = used
+            self.agstate.ccd2_alarm = alarm
+        elif all((key.name == 'cameraState3', key.isCurrent, key.isGenuine)):
+            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
+            self.agstate.ccd3_used = used
+            self.agstate.ccd3_alarm = alarm
+        elif all((key.name == 'cameraState4', key.isCurrent, key.isGenuine)):
+            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
+            self.agstate.ccd4_used = used
+            self.agstate.ccd4_alarm = alarm
+        elif all((key.name == 'cameraState5', key.isCurrent, key.isGenuine)):
+            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
+            self.agstate.ccd5_used = used
+            self.agstate.ccd5_alarm = alarm
+        elif all((key.name == 'cameraState6', key.isCurrent, key.isGenuine)):
+            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
+            self.agstate.ccd6_used = used
+            self.agstate.ccd6_alarm = alarm
