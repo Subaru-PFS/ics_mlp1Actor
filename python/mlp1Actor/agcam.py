@@ -26,6 +26,9 @@ class Agcam(object):
                 self.agstate.exposure_on = True
             elif state == 'done':
                 self.agstate.exposure_on = False
+        elif all((key.name == 'exposureTime', key.isCurrent, key.isGenuine)):
+            time = int(key.valueList[0])
+            self.agstate.exposure_time = time
         elif all((key.name == 'cameraState1', key.isCurrent, key.isGenuine)):
             used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
             self.agstate.ccd1_used = used

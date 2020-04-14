@@ -66,6 +66,7 @@ class Mlp1Actor(ICC):
             self.addModels(_models)
             self.models['ag'].keyVarDict['guideReady'].addCallback(self.ag.receiveStatusKeys, callNow=False)
             self.models['agcam'].keyVarDict['exposureState'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
+            self.models['agcam'].keyVarDict['exposureTime'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
             self.models['agcam'].keyVarDict['cameraState1'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
             self.models['agcam'].keyVarDict['cameraState2'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
             self.models['agcam'].keyVarDict['cameraState3'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
