@@ -5,7 +5,7 @@ import time
 import mlp1Actor.mlp1
 
 
-class mlp1(object):
+class mlp1:
 
     def __init__(self, actor, name, logLevel=logging.DEBUG):
 

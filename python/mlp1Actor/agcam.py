@@ -1,7 +1,7 @@
 from mlp1Actor.mlp1 import AGState
 
 
-class Agcam(object):
+class Agcam:
 
     def __init__(self, actor=None, logger=None):
 

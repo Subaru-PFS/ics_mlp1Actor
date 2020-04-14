@@ -7,7 +7,7 @@ class DecodeError(Exception):
     pass
 
 
-class AGState(object):
+class AGState:
 
     def __init__(self):
         self._m = PFSData()
@@ -538,7 +538,7 @@ class AGState(object):
         return _value
 
 
-class AGControl(object):
+class AGControl:
 
     def __init__(self):
 

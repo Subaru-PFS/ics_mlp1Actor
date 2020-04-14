@@ -1,7 +1,7 @@
 from mlp1Actor.mlp1 import AGState
 
 
-class Pfilamps(object):
+class Pfilamps:
 
     def __init__(self, actor=None, logger=None):
 
