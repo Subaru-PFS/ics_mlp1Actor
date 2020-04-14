@@ -443,6 +443,18 @@ class AGState(object):
 
         self.ccd1_used, self.ccd2_used, self.ccd3_used, self.ccd4_used, self.ccd5_used, self.ccd6_used = value
 
+    def get_ccd_used(self, camera_id):
+
+        attribute = 'ccd{}_used'.format(camera_id)
+        return getattr(self, attribute)
+
+    def set_ccd_used(self, camera_id, value):
+
+        attribute = 'ccd{}_used'.format(camera_id)
+        _value = getattr(self, attribute)
+        setattr(self, attribute, value)
+        return _value
+
     @property
     def ccd1_alarm(self):
 
@@ -512,6 +524,18 @@ class AGState(object):
     def ccd_alarm(self, value):
 
         self.ccd1_alarm, self.ccd2_alarm, self.ccd3_alarm, self.ccd4_alarm, self.ccd5_alarm, self.ccd6_alarm = value
+
+    def get_ccd_alarm(self, camera_id):
+
+        attribute = 'ccd{}_alarm'.format(camera_id)
+        return getattr(self, attribute)
+
+    def set_ccd_alarm(self, camera_id, value):
+
+        attribute = 'ccd{}_alarm'.format(camera_id)
+        _value = getattr(self, attribute)
+        setattr(self, attribute, value)
+        return _value
 
 
 class AGControl(object):

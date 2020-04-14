@@ -29,27 +29,8 @@ class Agcam(object):
         elif all((key.name == 'exposureTime', key.isCurrent, key.isGenuine)):
             time = int(key.valueList[0])
             self.agstate.exposure_time = time
-        elif all((key.name == 'cameraState1', key.isCurrent, key.isGenuine)):
+        elif all((key.name.startswith('cameraState'), key.isCurrent, key.isGenuine)):
+            camera_id = int(key.name[11:])
             used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
-            self.agstate.ccd1_used = used
-            self.agstate.ccd1_alarm = alarm
-        elif all((key.name == 'cameraState2', key.isCurrent, key.isGenuine)):
-            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
-            self.agstate.ccd2_used = used
-            self.agstate.ccd2_alarm = alarm
-        elif all((key.name == 'cameraState3', key.isCurrent, key.isGenuine)):
-            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
-            self.agstate.ccd3_used = used
-            self.agstate.ccd3_alarm = alarm
-        elif all((key.name == 'cameraState4', key.isCurrent, key.isGenuine)):
-            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
-            self.agstate.ccd4_used = used
-            self.agstate.ccd4_alarm = alarm
-        elif all((key.name == 'cameraState5', key.isCurrent, key.isGenuine)):
-            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
-            self.agstate.ccd5_used = used
-            self.agstate.ccd5_alarm = alarm
-        elif all((key.name == 'cameraState6', key.isCurrent, key.isGenuine)):
-            used, alarm = bool(key.valueList[0]), bool(key.valueList[1])
-            self.agstate.ccd6_used = used
-            self.agstate.ccd6_alarm = alarm
+            self.agstate.set_ccd_used(camera_id, used)
+            self.agstate.set_ccd_alarm(camera_id, alarm)
