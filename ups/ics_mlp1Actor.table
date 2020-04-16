@@ -1,4 +1,5 @@
 setupRequired(tron_actorcore)
+setupRequired(ics_actorkeys)
 setupRequired(ics_mac_mlp1)
 
 pathPrepend(PATH, ${PRODUCT_DIR}/bin)
