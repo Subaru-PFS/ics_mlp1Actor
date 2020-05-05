@@ -14,13 +14,14 @@ class Mlp1Cmd:
             ('ping', '', self.ping),
             ('status', '', self.status),
             ('show', '', self.show),
-            ('set_offsets', '[<altaz>] [<xy>]', self.set_offsets),
+            ('guide', '[<azel>] [<xy>] [<ready>]', self.guide),
         ]
         self.keys = keys.KeysDictionary(
             'mlp1_mlp1',
             (1, 1),
-            keys.Key('altaz', types.Float()*2, help=''),
+            keys.Key('azel', types.Float()*2, help=''),
             keys.Key('xy', types.Float()*2, help=''),
+            keys.Key('ready', types.Bool('0', '1'), help=''),
         )
 
     def ping(self, cmd):
@@ -48,26 +49,29 @@ class Mlp1Cmd:
                 cmd.warn('text="Mlp1Cmd.show: {}: {}"'.format(n, e))
         cmd.finish()
 
-    def set_offsets(self, cmd):
+    def guide(self, cmd):
 
         try:
-            if 'altaz' in cmd.cmd.keywords:
-                daz = float(cmd.cmd.keywords['altaz'].values[0])
-                dalt = float(cmd.cmd.keywords['altaz'].values[1])
-                if daz < -60.0 or 60.0 < daz:
-                    raise RuntimeError('daz={}'.format(daz))
-                if dalt < -60.0 or 60.0 < dalt:
-                    raise RuntimeError('dalt={}'.format(dalt))
-                self.actor.agstate.star_posn_error_azel = daz, dalt
+            if 'azel' in cmd.cmd.keywords:
+                eaz = float(cmd.cmd.keywords['azel'].values[0])
+                eel = float(cmd.cmd.keywords['azel'].values[1])
+                if eaz < -60.0 or 60.0 < eaz:
+                    raise RuntimeError('eaz={}'.format(eaz))
+                if eel < -60.0 or 60.0 < eel:
+                    raise RuntimeError('eel={}'.format(eel))
+                self.actor.agstate.star_posn_error_azel = eaz, eel
             if 'xy' in cmd.cmd.keywords:
-                dx = float(cmd.cmd.keywords['xy'].values[0])
-                dy = float(cmd.cmd.keywords['xy'].values[1])
-                if dx < -999999.99 or 999999.99 < dx:
-                    raise RuntimeError('dx={}'.format(dx))
-                if dy < -999999.99 or 999999.99 < dy:
-                    raise RuntimeError('dy={}'.format(dy))
-                self.actor.agstate.star_posn_error_xy = dx, dy
+                ex = float(cmd.cmd.keywords['xy'].values[0])
+                ey = float(cmd.cmd.keywords['xy'].values[1])
+                if ex < -999999.99 or 999999.99 < ex:
+                    raise RuntimeError('ex={}'.format(ex))
+                if ey < -999999.99 or 999999.99 < ey:
+                    raise RuntimeError('ey={}'.format(ey))
+                self.actor.agstate.star_posn_error_xy = ex, ey
+            if 'ready' in cmd.cmd.keywords:
+                ready = bool(cmd.cmd.keywords['ready'].values[0])
+                self.actor.agstate.guide_ready = ready
         except Exception as e:
-            cmd.fail('text="set_offsets: {}"'.format(e))
+            cmd.fail('text="guide: {}"'.format(e))
             return
         cmd.finish()
