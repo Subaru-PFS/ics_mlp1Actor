@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime
 from AGData import MLP1Data, PFSData
 
 
@@ -207,15 +207,17 @@ class AGState:
 
         self._m.SetDataToSHM('agtint', int(value))
 
+    # seconds since unix epoch
     @property
     def data_time(self):
 
-        return self._m.GetDataFromSHM('agtime')
+        return self._m.GetDataFromSHM('agtime').timestamp()
 
+    # seconds since unix epoch
     @data_time.setter
     def data_time(self, value):
 
-        self._m.SetDataToSHM('agtime', datetime(value).strftime('%y%m%d%H%M%S%f'))
+        self._m.SetDataToSHM('agtime', datetime.fromtimestamp(value))
 
     @property
     def image_data_delay_time(self):
@@ -587,15 +589,17 @@ class AGControl:
 
         self._m.SetFlagById('fault', 1, bool(value))
 
+    # seconds since midnight utc
     @property
     def az_el_detect_time(self):
 
-        return self._m.GetDataFromSHM('time')
+        return self._m.GetDataFromSHM('time').replace(year=1970, month=1, day=1).timestamp()
 
+    # seconds since midnight utc
     @az_el_detect_time.setter
     def az_el_detect_time(self, value):
 
-        self._m.SetDataToSHM('time', time(value).strftime('%H%M%S%f'))
+        self._m.SetDataToSHM('time', datetime.fromtimestamp(value % 86400))
 
     @property
     def az_real_angle(self):
