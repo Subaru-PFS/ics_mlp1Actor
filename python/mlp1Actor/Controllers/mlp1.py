@@ -127,6 +127,18 @@ class Receiver(threading.Thread):
                 self.agcntrl.data = data
                 #self.logger.info('data received')
 
+                cmd = self.actor.bcast
+                cmd.inform('telescopeState={},{},{},{},{},{},{},{}'.format(
+                    int(self.agcntrl.mount_if_fault),
+                    int(self.agcntrl.rotator_if_fault),
+                    self.agcntrl.az_el_detect_time,
+                    self.agcntrl.az_real_angle,
+                    self.agcntrl.el_real_angle,
+                    self.agcntrl.rotator_real_angle,
+                    int(self.agcntrl.ag_if_alarm),
+                    int(self.agcntrl.tsc_fault)
+                ))
+
                 def logFunc(result):
 
                     if result.didFail:
