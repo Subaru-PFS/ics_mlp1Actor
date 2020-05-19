@@ -13,6 +13,7 @@ class mlp1:
         self.name = name
         self.logger = logging.getLogger(self.name)
         self.logger.setLevel(logLevel)
+        self.agcntrl = mlp1Actor.mlp1.AGControl()  # referenced by only Receiver and Transmitter
         self.com = None
         self.receiver = None
         self.transmitter = None
@@ -37,10 +38,10 @@ class mlp1:
             self.com.dsrdtr = False
             self.com.open()
         except serial.SerialException as e:
-            logger.warn('{}'.format(e))
+            self.logger.warn('{}'.format(e))
             raise
-        self.receiver = Receiver(actor=self.actor, logger=self.logger, com=self.com)
-        self.transmitter = Transmitter(logger=self.logger, com=self.com)
+        self.receiver = Receiver(actor=self.actor, logger=self.logger, com=self.com, agcntrl=self.agcntrl)
+        self.transmitter = Transmitter(logger=self.logger, com=self.com, agcntrl=self.agcntrl, agstate=self.actor.agstate)
         self.receiver.start()
         self.transmitter.start()
 
@@ -64,14 +65,14 @@ class Receiver(threading.Thread):
     _LWAIT = 0.1
     _LTIMEOUT = 11
 
-    def __init__(self, actor=None, logger=None, com=None):
+    def __init__(self, actor=None, logger=None, com=None, agcntrl=None):
 
         super().__init__()
 
         self.actor = actor
         self.logger = logger
         self.com = com
-        self.agcntrl = mlp1Actor.mlp1.AGControl()
+        self.agcntrl = agcntrl
         self.__stop = threading.Event()
 
     def __del__(self):
@@ -168,14 +169,14 @@ class Transmitter(threading.Thread):
 
     _INTERVAL = 1.0
 
-    def __init__(self, logger=None, com=None):
+    def __init__(self, logger=None, com=None, agcntrl=None, agstate=None):
 
         super().__init__()
 
         self.logger = logger
         self.com = com
-        self.agcntrl = mlp1Actor.mlp1.AGControl()
-        self.agstate = mlp1Actor.mlp1.AGState()
+        self.agcntrl = agcntrl
+        self.agstate = agstate
         self.__stop = threading.Event()
 
     def __del__(self):

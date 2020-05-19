@@ -1,13 +1,9 @@
-from mlp1Actor.mlp1 import AGState
-
-
 class Ag:
 
     def __init__(self, actor=None, logger=None):
 
         self.actor = actor
         self.logger = logger
-        self.agstate = AGState()
 
     def receiveStatusKeys(self, key):
 
@@ -22,4 +18,4 @@ class Ag:
 
         if all((key.name == 'guideReady', key.isCurrent, key.isGenuine)):
             ready = bool(key.valueList[0])
-            self.agstate.guide_ready = ready
+            self.actor.agstate.guide_ready = ready

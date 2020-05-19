@@ -47,10 +47,11 @@ class Mlp1Actor(ICC):
 
             self._everConnected = True
 
+            self.agstate = AGState()
+
             self.allControllers = ['mlp1']
             self.attachAllControllers()
 
-            self.agstate = AGState()
             self.ag = Ag(actor=self, logger=self.logger)
             self.agcam = Agcam(actor=self, logger=self.logger)
             self.pfilamps = Pfilamps(actor=self, logger=self.logger)
