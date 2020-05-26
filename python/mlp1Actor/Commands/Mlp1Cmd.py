@@ -14,7 +14,7 @@ class Mlp1Cmd:
             ('ping', '', self.ping),
             ('status', '', self.status),
             ('show', '', self.show),
-            ('guide', '[<azel>] [<xy>] [<ready>]', self.guide),
+            ('guide', '[<azel>] [<xy>] [<ready>] [<time>] [<delay>]', self.guide),
         ]
         self.keys = keys.KeysDictionary(
             'mlp1_mlp1',
@@ -22,6 +22,8 @@ class Mlp1Cmd:
             keys.Key('azel', types.Float()*2, help=''),
             keys.Key('xy', types.Float()*2, help=''),
             keys.Key('ready', types.Bool('0', '1'), help=''),
+            keys.Key('time', types.Float(), help=''),
+            keys.Key('delay', types.Float(), help=''),
         )
 
     def ping(self, cmd):
@@ -71,6 +73,12 @@ class Mlp1Cmd:
             if 'ready' in cmd.cmd.keywords:
                 ready = bool(cmd.cmd.keywords['ready'].values[0])
                 self.actor.agstate.guide_ready = ready
+            if 'time' in cmd.cmd.keywords:
+                time = float(cmd.cmd.keywords['time'].values[0])
+                self.actor.agstate.data_time = time
+            if 'delay' in cmd.cmd.keywords:
+                delay = float(cmd.cmd.keywords['delay'].values[0])
+                self.actor.agstate.image_data_delay_time = delay
         except Exception as e:
             cmd.fail('text="guide: {}"'.format(e))
             return
