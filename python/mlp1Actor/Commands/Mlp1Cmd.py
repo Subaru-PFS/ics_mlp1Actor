@@ -14,16 +14,19 @@ class Mlp1Cmd:
             ('ping', '', self.ping),
             ('status', '', self.status),
             ('show', '', self.show),
-            ('guide', '[<azel>] [<xy>] [<ready>] [<time>] [<delay>]', self.guide),
+            ('guide', '[<azel>] [<delay>] [<flux>] [<intensity>] [<ready>] [<size>] [<time>] [<xy>]', self.guide),
         ]
         self.keys = keys.KeysDictionary(
             'mlp1_mlp1',
             (1, 1),
             keys.Key('azel', types.Float()*2, help=''),
-            keys.Key('xy', types.Float()*2, help=''),
-            keys.Key('ready', types.Bool('0', '1'), help=''),
-            keys.Key('time', types.Float(), help=''),
             keys.Key('delay', types.Float(), help=''),
+            keys.Key('flux', types.Float(), help=''),
+            keys.Key('intensity', types.Float(), help=''),
+            keys.Key('ready', types.Bool('0', '1'), help=''),
+            keys.Key('size', types.Float(), help=''),
+            keys.Key('time', types.Float(), help=''),
+            keys.Key('xy', types.Float()*2, help=''),
         )
 
     def ping(self, cmd):
@@ -62,6 +65,24 @@ class Mlp1Cmd:
                 if eel < -60.0 or 60.0 < eel:
                     raise RuntimeError('eel={}'.format(eel))
                 self.actor.agstate.star_posn_error_azel = eaz, eel
+            if 'delay' in cmd.cmd.keywords:
+                delay = float(cmd.cmd.keywords['delay'].values[0])
+                self.actor.agstate.image_data_delay_time = delay
+            if 'flux' in cmd.cmd.keywords:
+                flux = float(cmd.cmd.keywords['flux'].values[0])
+                self.actor.agstate.star_total_intensity = flux
+            if 'intensity' in cmd.cmd.keywords:
+                intensity = float(cmd.cmd.keywords['intensity'].values[0])
+                self.actor.agstate.star_posn_intensity = intensity
+            if 'ready' in cmd.cmd.keywords:
+                ready = bool(cmd.cmd.keywords['ready'].values[0])
+                self.actor.agstate.guide_ready = ready
+            if 'size' in cmd.cmd.keywords:
+                size = float(cmd.cmd.keywords['size'].values[0])
+                self.actor.agstate.image_size = size
+            if 'time' in cmd.cmd.keywords:
+                time = float(cmd.cmd.keywords['time'].values[0])
+                self.actor.agstate.data_time = time
             if 'xy' in cmd.cmd.keywords:
                 ex = float(cmd.cmd.keywords['xy'].values[0])
                 ey = float(cmd.cmd.keywords['xy'].values[1])
@@ -70,15 +91,6 @@ class Mlp1Cmd:
                 if ey < -999999.99 or 999999.99 < ey:
                     raise RuntimeError('ey={}'.format(ey))
                 self.actor.agstate.star_posn_error_xy = ex, ey
-            if 'ready' in cmd.cmd.keywords:
-                ready = bool(cmd.cmd.keywords['ready'].values[0])
-                self.actor.agstate.guide_ready = ready
-            if 'time' in cmd.cmd.keywords:
-                time = float(cmd.cmd.keywords['time'].values[0])
-                self.actor.agstate.data_time = time
-            if 'delay' in cmd.cmd.keywords:
-                delay = float(cmd.cmd.keywords['delay'].values[0])
-                self.actor.agstate.image_data_delay_time = delay
         except Exception as e:
             cmd.fail('text="guide: {}"'.format(e))
             return
