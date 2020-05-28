@@ -60,15 +60,20 @@ class Mlp1Actor(ICC):
 
             _models = ('ag', 'agcam', 'pfilamps', 'vlan',)
             self.addModels(_models)
-            self.models['ag'].keyVarDict['guideReady'].addCallback(self.ag.receiveStatusKeys, callNow=False)
-            self.models['agcam'].keyVarDict['exposureState'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
-            self.models['agcam'].keyVarDict['exposureTime'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
-            self.models['agcam'].keyVarDict['cameraState1'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
-            self.models['agcam'].keyVarDict['cameraState2'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
-            self.models['agcam'].keyVarDict['cameraState3'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
-            self.models['agcam'].keyVarDict['cameraState4'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
-            self.models['agcam'].keyVarDict['cameraState5'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
-            self.models['agcam'].keyVarDict['cameraState6'].addCallback(self.agcam.receiveStatusKeys, callNow=False)
+            for key in ('guideReady', 'detectionState'):
+                self.models['ag'].keyVarDict[key].addCallback(self.ag.receiveStatusKeys, callNow=False)
+            for key in (
+                    'exposureState',
+                    'exposureTime',
+                    'cameraState1',
+                    'cameraState2',
+                    'cameraState3',
+                    'cameraState4',
+                    'cameraState5',
+                    'cameraState6',
+                    'detectionState'
+            ):
+                self.models['agcam'].keyVarDict[key].addCallback(self.agcam.receiveStatusKeys, callNow=False)
             self.models['pfilamps'].keyVarDict['lampStatus'].addCallback(self.pfilamps.receiveStatusKeys, callNow=False)
             for key in ('vgw', 'tws1', 'tws2'):
                 self.models['vlan'].keyVarDict[key].addCallback(self.vlan.receiveStatusKeys, callNow=False)

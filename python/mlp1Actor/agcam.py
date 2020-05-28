@@ -22,6 +22,10 @@ class Agcam:
                 self.actor.agstate.exposure_on = True
             elif state == 'done':
                 self.actor.agstate.exposure_on = False
+        elif all((key.name == 'detectionState', key.isCurrent, key.isGenuine)):
+            state = bool(key.valueList[0])
+            if state:
+                self.actor.agstate.star_posn_detect = state
         elif all((key.name == 'exposureTime', key.isCurrent, key.isGenuine)):
             time = int(key.valueList[0])
             self.actor.agstate.exposure_time = time

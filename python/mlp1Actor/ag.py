@@ -19,3 +19,7 @@ class Ag:
         if all((key.name == 'guideReady', key.isCurrent, key.isGenuine)):
             ready = bool(key.valueList[0])
             self.actor.agstate.guide_ready = ready
+        elif all((key.name == 'detectionState', key.isCurrent, key.isGenuine)):
+            state = bool(key.valueList[0])
+            if not state:
+                self.actor.agstate.star_posn_detect = state
