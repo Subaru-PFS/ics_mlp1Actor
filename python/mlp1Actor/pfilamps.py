@@ -34,3 +34,23 @@ class Pfilamps:
                     self.actor.agstate.halogen_on = True
             elif status == 'unknown':
                 pass
+
+    def _getValues(self, key):
+
+        valueList = self.actor.models['pfilamps'].keyVarDict[key].valueList
+        return {x.name: x.__class__.baseType(x) for x in valueList} if len(valueList) > 1 else valueList[0].__class__.baseType(valueList[0])
+
+    @property
+    def lampStatus(self):
+
+        return self._getValues('lampStatus')
+
+    @property
+    def lampRequest(self):
+
+        return self._getValues('lampRequest')
+
+    @property
+    def lampIntensity(self):
+
+        return self._getValues('lampIntensity')

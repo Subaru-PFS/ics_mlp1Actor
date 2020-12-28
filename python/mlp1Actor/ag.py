@@ -22,3 +22,18 @@ class Ag:
         elif all((key.name == 'detectionState', key.isCurrent, key.isGenuine)):
             state = bool(key.valueList[0])
             self.actor.agstate.star_posn_detect = state
+
+    def _getValues(self, key):
+
+        valueList = self.actor.models['ag'].keyVarDict[key].valueList
+        return {x.name: x.__class__.baseType(x) for x in valueList} if len(valueList) > 1 else valueList[0].__class__.baseType(valueList[0])
+
+    @property
+    def guideReady(self):
+
+        return self._getValues('guideReady')
+
+    @property
+    def detectionState(self):
+
+        return self._getValues('detectionState')
