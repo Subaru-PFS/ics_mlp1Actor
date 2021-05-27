@@ -5,7 +5,7 @@ import queue
 from actorcore.ICC import ICC
 from mlp1Actor.mlp1 import AGState
 from mlp1Actor.ag import Ag
-from mlp1Actor.agcam import Agcam
+from mlp1Actor.agcc import Agcc
 from mlp1Actor.pfilamps import Pfilamps
 from mlp1Actor.vlan import Vlan
 
@@ -53,29 +53,27 @@ class Mlp1Actor(ICC):
             self.attachAllControllers()
 
             self.ag = Ag(actor=self, logger=self.logger)
-            self.agcam = Agcam(actor=self, logger=self.logger)
+            self.agcc = Agcc(actor=self, logger=self.logger)
             self.pfilamps = Pfilamps(actor=self, logger=self.logger)
             self.vlan = Vlan(actor=self, logger=self.logger)
             #self.mlp1 = Mlp1(actor=self, logger=self.logger)
 
-            _models = ('ag', 'agcam', 'pfilamps', 'vlan',)
+            _models = ('ag', 'agcc', 'pfilamps', 'vlan',)
             self.addModels(_models)
-            for key in ('guideReady', 'detectionState'):
+            for key in ('detectionState', 'exposureTime', 'guideReady',):
                 self.models['ag'].keyVarDict[key].addCallback(self.ag.receiveStatusKeys, callNow=False)
             for key in (
-                    'exposureState',
-                    'exposureTime',
-                    'cameraState1',
-                    'cameraState2',
-                    'cameraState3',
-                    'cameraState4',
-                    'cameraState5',
-                    'cameraState6',
-                    'detectionState'
+                    'agc_exposing',
+                    'agc1_stat',
+                    'agc2_stat',
+                    'agc3_stat',
+                    'agc4_stat',
+                    'agc5_stat',
+                    'agc6_stat',
             ):
-                self.models['agcam'].keyVarDict[key].addCallback(self.agcam.receiveStatusKeys, callNow=False)
+                self.models['agcc'].keyVarDict[key].addCallback(self.agcc.receiveStatusKeys, callNow=False)
             self.models['pfilamps'].keyVarDict['lampStatus'].addCallback(self.pfilamps.receiveStatusKeys, callNow=False)
-            for key in ('vgw', 'tws1', 'tws2'):
+            for key in ('vgw', 'tws1', 'tws2',):
                 self.models['vlan'].keyVarDict[key].addCallback(self.vlan.receiveStatusKeys, callNow=False)
 
     # override

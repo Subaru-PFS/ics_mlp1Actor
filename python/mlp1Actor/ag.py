@@ -22,6 +22,9 @@ class Ag:
         elif all((key.name == 'detectionState', key.isCurrent, key.isGenuine)):
             state = bool(key.valueList[0])
             self.actor.agstate.star_posn_detect = state
+        elif all((key.name == 'exposureTime', key.isCurrent, key.isGenuine)):
+            time = int(key.valueList[0])
+            self.actor.agstate.exposure_time = time
 
     def _getValues(self, key):
 
@@ -37,3 +40,8 @@ class Ag:
     def detectionState(self):
 
         return self._getValues('detectionState')
+
+    @property
+    def exposureTime(self):
+
+        return self._getValues('exposureTime')
