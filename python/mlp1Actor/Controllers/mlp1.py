@@ -60,17 +60,18 @@ class Transceiver(threading.Thread):
         while 1:
             self.logger.info('xcvr: (re)start')
             try:
-                self.comm = serial.Serial()
-                self.comm.baudrate = 38400
-                self.comm.port = '/dev/ttyUSB1'
-                self.comm.parity = serial.PARITY_EVEN
-                self.comm.timeout = 0
-                self.comm.bytesize = serial.SEVENBITS
-                self.comm.stopbits = serial.STOPBITS_TWO
-                self.comm.xonxoff = False
-                self.comm.rtscts = False
-                self.comm.dsrdtr = False
-                self.comm.open()
+                self.comm = serial.serial_for_url('socket://133.40.164.127:4001')
+                #self.comm = serial.Serial()
+                #self.comm.baudrate = 38400
+                #self.comm.port = '/dev/ttyUSB1'
+                #self.comm.parity = serial.PARITY_EVEN
+                #self.comm.timeout = 0
+                #self.comm.bytesize = serial.SEVENBITS
+                #self.comm.stopbits = serial.STOPBITS_TWO
+                #self.comm.xonxoff = False
+                #self.comm.rtscts = False
+                #self.comm.dsrdtr = False
+                #self.comm.open()
             except serial.SerialException as e:
                 self.logger.warn('xcvr: {}'.format(e))
                 raise
