@@ -13,7 +13,7 @@ class Pfilamps:
             key.timestamp,
             key.isCurrent,
             key.isGenuine,
-            [x.__class__.baseType(x) for x in key.valueList]
+            [x.__class__.baseType(x) if x is not None else None for x in key.valueList]
         ))
 
         lampTime = [float(x) for x in self.actor.models['pfilamps'].keyVarDict.get('lampRequest', (0, 0, 0, 0, 0, 0))]
@@ -38,7 +38,7 @@ class Pfilamps:
     def _getValues(self, key):
 
         valueList = self.actor.models['pfilamps'].keyVarDict[key].valueList
-        return {x.name: x.__class__.baseType(x) for x in valueList} if len(valueList) > 1 else valueList[0].__class__.baseType(valueList[0])
+        return {x.name: x.__class__.baseType(x) if x is not None else None for x in valueList} if len(valueList) > 1 else valueList[0].__class__.baseType(valueList[0]) if valueList[0] is not None else None
 
     @property
     def lampStatus(self):

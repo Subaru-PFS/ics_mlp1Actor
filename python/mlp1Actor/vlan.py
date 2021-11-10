@@ -13,7 +13,7 @@ class Vlan:
             key.timestamp,
             key.isCurrent,
             key.isGenuine,
-            [x.__class__.baseType(x) for x in key.valueList]
+            [x.__class__.baseType(x) if x is not None else None for x in key.valueList]
         ))
 
         if all((key.name in ('vgw', 'tws1', 'tws2'), key.isCurrent, key.isGenuine)):
