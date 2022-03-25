@@ -220,13 +220,15 @@ class AGState:
     @property
     def data_time(self):
         with self._lock:
-            return self._data.GetDataFromSHM('agtime').timestamp()
+            # timezone-unaware datetime in UTC
+            return self._data.GetDataFromSHM('agtime').replace(tzinfo=datetime.timezone.utc).timestamp()
 
     # seconds since unix epoch
     @data_time.setter
     def data_time(self, value):
         with self._lock:
-            self._data.SetDataToSHM('agtime', datetime.datetime.fromtimestamp(value))
+            # timezone-unaware datetime in UTC
+            self._data.SetDataToSHM('agtime', datetime.datetime.utcfromtimestamp(value))
 
     @property
     def image_data_delay_time(self):
@@ -606,13 +608,16 @@ class AGControl:
     @property
     def az_el_detect_time(self):
         with self._lock:
-            return self._data.GetDataFromSHM('time').replace(year=1970, month=1, day=1).timestamp()
+            # timezone-unaware datetime in UTC (1900, 1, 1, ...) - date ignored
+            _time = self._data.GetDataFromSHM('time').time()
+            return 3600 * _time.hour + 60 * _time.minute + _time.second + 1e-6 * _time.microsecond
 
     # seconds since midnight utc
     @az_el_detect_time.setter
     def az_el_detect_time(self, value):
         with self._lock:
-            self._data.SetDataToSHM('time', datetime.datetime.fromtimestamp(value % 86400))
+            # timezone-unaware datetime in UTC - date ignored
+            self._data.SetDataToSHM('time', datetime.datetime.utcfromtimestamp(value))
 
     @property
     def az_real_angle(self):
