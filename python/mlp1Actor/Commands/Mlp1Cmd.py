@@ -65,6 +65,7 @@ class Mlp1Cmd:
                 if eel < -60.0 or 60.0 < eel:
                     raise RuntimeError('eel={}'.format(eel))
                 self.actor.agstate.star_posn_error_azel = eaz, eel
+                cmd.inform('guideError={},{}'.format(- eaz, - eel))
             if 'delay' in cmd.cmd.keywords:
                 delay = float(cmd.cmd.keywords['delay'].values[0])
                 self.actor.agstate.image_data_delay_time = delay
