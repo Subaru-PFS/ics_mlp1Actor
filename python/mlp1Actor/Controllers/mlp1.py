@@ -77,7 +77,7 @@ class Transceiver(threading.Thread):
             self.logger.info('xcvr: (re)start')
             stop = False
             try:
-                with serial.serial_for_url('socket://127.0.0.1:4001') as comm:
+                with serial.serial_for_url('socket://133.40.164.127:4001') as comm:
                     #comm = serial.Serial()
                     #comm.baudrate = 38400
                     #comm.port = '/dev/ttyUSB1'
