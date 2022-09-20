@@ -56,14 +56,20 @@ class Mlp1Cmd:
 
     def guide(self, cmd):
 
+        def clamp(x, xmin, xmax):
+
+            return max(xmin, min(x, xmax))
+
         try:
             if 'azel' in cmd.cmd.keywords:
                 eaz = float(cmd.cmd.keywords['azel'].values[0])
                 eel = float(cmd.cmd.keywords['azel'].values[1])
-                if eaz < -60.0 or 60.0 < eaz:
-                    raise RuntimeError('eaz={}'.format(eaz))
-                if eel < -60.0 or 60.0 < eel:
-                    raise RuntimeError('eel={}'.format(eel))
+                if (_eaz := clamp(eaz, -60, 60)) != eaz:
+                    cmd.warn('text="guide offset in azimuth ({}) out of range, clamped ({})"'.format(eaz, _eaz))
+                    eaz = _eaz
+                if (_eel := clamp(eel, -60, 60)) != eel:
+                    cmd.warn('text="guide offset in altitude ({}) out of range, clamped ({})"'.format(eel, _eel))
+                    eel = _eel
                 self.actor.agstate.star_posn_error_azel = eaz, eel
                 cmd.inform('guideError={},{}'.format(- eaz, - eel))
             if 'delay' in cmd.cmd.keywords:
@@ -87,10 +93,12 @@ class Mlp1Cmd:
             if 'xy' in cmd.cmd.keywords:
                 ex = float(cmd.cmd.keywords['xy'].values[0])
                 ey = float(cmd.cmd.keywords['xy'].values[1])
-                if ex < -999999.99 or 999999.99 < ex:
-                    raise RuntimeError('ex={}'.format(ex))
-                if ey < -999999.99 or 999999.99 < ey:
-                    raise RuntimeError('ey={}'.format(ey))
+                if (_ex := clamp(ex, -999999.99, 999999.99)) != ex:
+                    cmd.warn('text="guide offset in x ({}) out of range, clamped ({})"'.format(ex, _ex))
+                    ex = _ex
+                if (_ey := clamp(ey, -999999.99, 999999.99)) != ey:
+                    cmd.warn('text="guide offset in y ({}) out of range, clamped ({})"'.format(ey, _ey))
+                    ey = _ey
                 self.actor.agstate.star_posn_error_xy = ex, ey
         except Exception as e:
             cmd.fail('text="guide: {}"'.format(e))
