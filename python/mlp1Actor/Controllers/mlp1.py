@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import serial
+import sqlite3
 import threading
 import time
 import mlp1Actor.mlp1
@@ -133,6 +134,7 @@ class Receiver(threading.Thread):
 
     def run(self):
 
+        db = sqlite3.connect('file:/software/mhs/data/mlp1/mlp1.db', uri=True)
         while 1:
             if self.__stop.is_set():
                 break
@@ -173,7 +175,10 @@ class Receiver(threading.Thread):
                     time.sleep(Receiver._LWAIT)
             try:
                 self.agcontrol.data = data
-                self.logger.info('rcvr: {}'.format(datetime.now()))
+                t = datetime.now(tz=timezone.utc)
+                db.execute('INSERT INTO rcv (timestamp,data) VALUES (?,?)', (t.timestamp(), self.agcontrol.data))
+                db.commit()
+                self.logger.info('rcvr: {}'.format(t))
                 cmd = self.actor.bcast
                 cmd.inform('telescopeState={},{},{},{},{},{},{},{}'.format(
                     int(self.agcontrol.mount_if_fault),
@@ -209,6 +214,7 @@ class Receiver(threading.Thread):
                 self.logger.warn('rcvr: data validation error')
             if self.agcontrol.fault:
                 self.logger.warn('rcvr: serial communication error')
+        db.close()
 
 
 class Transmitter(threading.Thread):
@@ -235,10 +241,15 @@ class Transmitter(threading.Thread):
 
     def run(self):
 
+        db = sqlite3.connect('file:/software/mhs/data/mlp1/mlp1.db', uri=True)
         while 1:
             stop = self.__stop.wait(Transmitter._INTERVAL - time.time() % Transmitter._INTERVAL)
             if stop:
                 break
             self.agstate.mlp1_if_alarm = self.agcontrol.fault
             self.comm.write(self.agstate.data)
-            self.logger.info('xmtr: {}'.format(datetime.now()))
+            t = datetime.now(tz=timezone.utc)
+            db.execute('INSERT INTO xmt (timestamp,data) VALUES (?,?)', (t.timestamp(), self.agstate.data))
+            db.commit()
+            self.logger.info('xmtr: {}'.format(t))
+        db.close()
