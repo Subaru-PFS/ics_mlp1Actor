@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import serial
+import sqlite3
 import threading
 import time
 import mlp1Actor.mlp1
@@ -14,7 +15,6 @@ class mlp1:
         self.name = name
         self.logger = logging.getLogger(self.name)
         self.logger.setLevel(logLevel)
-        self.transceiver = None
 
     def __del__(self):
 
@@ -23,15 +23,15 @@ class mlp1:
     def start(self, cmd=None):
 
         self.logger.info('starting mlp1...')
-        self.transceiver = Transceiver(actor=self.actor, logger=self.logger)
-        self.transceiver.start()
+        self.xcvr = Transceiver(actor=self.actor, logger=self.logger)
+        self.xcvr.start()
 
     def stop(self, cmd=None):
 
         self.logger.info('stopping mlp1...')
-        self.transceiver.stop()
-        self.transceiver.join()
-        self.transceiver = None
+        self.xcvr.stop()
+        self.xcvr.join()
+        del self.xcvr
 
 
 class Transceiver(threading.Thread):
@@ -45,7 +45,6 @@ class Transceiver(threading.Thread):
         self.logger = logger
         self.agcontrol = mlp1Actor.mlp1.AGControl()
         self.__stop = threading.Event()
-        self.comm = None
 
     def __del__(self):
 
@@ -57,48 +56,56 @@ class Transceiver(threading.Thread):
 
     def run(self):
 
+        from contextlib import contextmanager
+
+        @contextmanager
+        def _managed_thread(_class, *args, **kwargs):
+
+            _thread = _class(*args, **kwargs)
+            self.logger.info('xcvr: {}: (re)start'.format(_class.__name__))
+            _thread.start()
+            try:
+                yield _thread
+            except Exception as e:
+                self.logger.warn('xcvr: {}: {}'.format(_class.__name__, e))
+            finally:
+                self.logger.info('xcvr: {}: stop'.format(_class.__name__))
+                _thread.stop()
+                _thread.join()
+                del _thread
+
         while 1:
             self.logger.info('xcvr: (re)start')
+            stop = False
             try:
-                self.comm = serial.Serial()
-                self.comm.baudrate = 38400
-                self.comm.port = '/dev/ttyUSB1'
-                self.comm.parity = serial.PARITY_EVEN
-                self.comm.timeout = 0
-                self.comm.bytesize = serial.SEVENBITS
-                self.comm.stopbits = serial.STOPBITS_TWO
-                self.comm.xonxoff = False
-                self.comm.rtscts = False
-                self.comm.dsrdtr = False
-                self.comm.open()
+                with serial.serial_for_url('socket://133.40.164.127:4001') as comm:
+                    #comm = serial.Serial()
+                    #comm.baudrate = 38400
+                    #comm.port = '/dev/ttyUSB1'
+                    #comm.parity = serial.PARITY_EVEN
+                    #comm.timeout = 0
+                    #comm.bytesize = serial.SEVENBITS
+                    #comm.stopbits = serial.STOPBITS_TWO
+                    #comm.xonxoff = False
+                    #comm.rtscts = False
+                    #comm.dsrdtr = False
+                    #comm.open()
+                    with _managed_thread(Receiver, actor=self.actor, logger=self.logger, comm=comm, agcontrol=self.agcontrol) as rcvr, _managed_thread(Transmitter, actor=self.actor, logger=self.logger, comm=comm, agcontrol=self.agcontrol) as xmtr:
+                        while 1:
+                            stop = self.__stop.wait(Transceiver._INTERVAL - time.time() % Transceiver._INTERVAL)
+                            if stop:
+                                break
+                            if not rcvr.is_alive():
+                                self.logger.warn('xcvr: {} not alive'.format(rcvr.__class__.__name__))
+                                break
+                            if not xmtr.is_alive():
+                                self.logger.warn('xcvr: {} not alive'.format(xmtr.__class__.__name__))
+                                break
             except serial.SerialException as e:
                 self.logger.warn('xcvr: {}'.format(e))
-                raise
-            self.receiver = Receiver(actor=self.actor, logger=self.logger, comm=self.comm, agcontrol=self.agcontrol)
-            self.transmitter = Transmitter(actor=self.actor, logger=self.logger, comm=self.comm, agcontrol=self.agcontrol)
-            self.receiver.start()
-            self.transmitter.start()
-            stop = False
-            while 1:
-                stop = self.__stop.wait(Transceiver._INTERVAL - time.time() % Transceiver._INTERVAL)
-                if stop:
-                    break
-                if not self.receiver.is_alive():
-                    self.logger.warn('xcvr: receiver not alive')
-                    break
-                if not self.transmitter.is_alive():
-                    self.logger.warn('xcvr: transmitter not alive')
-                    break
-            self.transmitter.stop()
-            self.receiver.stop()
-            self.transmitter.join()
-            self.transmitter = None
-            self.receiver.join()
-            self.receiver = None
-            self.comm.close()
-            self.comm = None
             if stop:
                 break
+            time.sleep(Transceiver._INTERVAL)
 
 
 class Receiver(threading.Thread):
@@ -127,6 +134,7 @@ class Receiver(threading.Thread):
 
     def run(self):
 
+        db = sqlite3.connect('file:/software/mhs/data/mlp1/mlp1.db', uri=True)
         while 1:
             if self.__stop.is_set():
                 break
@@ -167,7 +175,10 @@ class Receiver(threading.Thread):
                     time.sleep(Receiver._LWAIT)
             try:
                 self.agcontrol.data = data
-                self.logger.info('rcvr: {}'.format(datetime.now()))
+                t = datetime.now(tz=timezone.utc)
+                db.execute('INSERT INTO rcv (timestamp,data) VALUES (?,?)', (t.timestamp(), self.agcontrol.data))
+                db.commit()
+                self.logger.info('rcvr: {}'.format(t))
                 cmd = self.actor.bcast
                 cmd.inform('telescopeState={},{},{},{},{},{},{},{}'.format(
                     int(self.agcontrol.mount_if_fault),
@@ -203,6 +214,7 @@ class Receiver(threading.Thread):
                 self.logger.warn('rcvr: data validation error')
             if self.agcontrol.fault:
                 self.logger.warn('rcvr: serial communication error')
+        db.close()
 
 
 class Transmitter(threading.Thread):
@@ -229,10 +241,15 @@ class Transmitter(threading.Thread):
 
     def run(self):
 
+        db = sqlite3.connect('file:/software/mhs/data/mlp1/mlp1.db', uri=True)
         while 1:
             stop = self.__stop.wait(Transmitter._INTERVAL - time.time() % Transmitter._INTERVAL)
             if stop:
                 break
             self.agstate.mlp1_if_alarm = self.agcontrol.fault
             self.comm.write(self.agstate.data)
-            self.logger.info('xmtr: {}'.format(datetime.now()))
+            t = datetime.now(tz=timezone.utc)
+            db.execute('INSERT INTO xmt (timestamp,data) VALUES (?,?)', (t.timestamp(), self.agstate.data))
+            db.commit()
+            self.logger.info('xmtr: {}'.format(t))
+        db.close()
