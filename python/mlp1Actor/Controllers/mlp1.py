@@ -124,6 +124,7 @@ class Receiver(threading.Thread):
         self.comm = comm
         self.agcontrol = agcontrol
         self.__stop = threading.Event()
+        self.dbUri = self.actor.actorConfig.get('dbUri', None)
 
     def __del__(self):
 
@@ -135,7 +136,7 @@ class Receiver(threading.Thread):
 
     def run(self):
         if self.dbUri is not None:
-            db = sqlite3.connect(dbUri, uri=True)
+            db = sqlite3.connect(self.dbUri, uri=True)
         else:
             db = None
         while 1:
@@ -248,7 +249,7 @@ class Transmitter(threading.Thread):
     def run(self):
 
         if self.dbUri is not None:
-            db = sqlite3.connect(dbUri, uri=True)
+            db = sqlite3.connect(self.dbUri, uri=True)
         else:
             db = None
         while 1:
