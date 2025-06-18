@@ -15,6 +15,7 @@ class mlp1:
         self.name = name
         self.logger = logging.getLogger(self.name)
         self.logger.setLevel(logLevel)
+        self.dbUri = self.actor.actorConfig.get('dbUri', None)
 
     def __del__(self):
 
@@ -123,6 +124,7 @@ class Receiver(threading.Thread):
         self.comm = comm
         self.agcontrol = agcontrol
         self.__stop = threading.Event()
+        self.dbUri = self.actor.actorConfig.get('dbUri', None)
 
     def __del__(self):
 
@@ -133,8 +135,10 @@ class Receiver(threading.Thread):
         self.__stop.set()
 
     def run(self):
-
-        db = sqlite3.connect('file:/software/mhs/data/mlp1/mlp1.db', uri=True)
+        if self.dbUri is not None:
+            db = sqlite3.connect(self.dbUri, uri=True)
+        else:
+            db = None
         while 1:
             if self.__stop.is_set():
                 break
@@ -176,8 +180,9 @@ class Receiver(threading.Thread):
             try:
                 self.agcontrol.data = data
                 t = datetime.now(tz=timezone.utc)
-                db.execute('INSERT INTO rcv (timestamp,data) VALUES (?,?)', (t.timestamp(), self.agcontrol.data))
-                db.commit()
+                if db is not None:
+                    db.execute('INSERT INTO rcv (timestamp,data) VALUES (?,?)', (t.timestamp(), self.agcontrol.data))
+                    db.commit()
                 self.logger.info('rcvr: {}'.format(t))
                 cmd = self.actor.bcast
                 cmd.inform('telescopeState={},{},{},{},{},{},{},{}'.format(
@@ -214,7 +219,8 @@ class Receiver(threading.Thread):
                 self.logger.warn('rcvr: data validation error')
             if self.agcontrol.fault:
                 self.logger.warn('rcvr: serial communication error')
-        db.close()
+        if db is not None:
+            db.close()
 
 
 class Transmitter(threading.Thread):
@@ -230,6 +236,7 @@ class Transmitter(threading.Thread):
         self.agcontrol = agcontrol
         self.agstate = self.actor.agstate
         self.__stop = threading.Event()
+        self.dbUri = self.actor.actorConfig.get('dbUri', None)
 
     def __del__(self):
 
@@ -241,7 +248,10 @@ class Transmitter(threading.Thread):
 
     def run(self):
 
-        db = sqlite3.connect('file:/software/mhs/data/mlp1/mlp1.db', uri=True)
+        if self.dbUri is not None:
+            db = sqlite3.connect(self.dbUri, uri=True)
+        else:
+            db = None
         while 1:
             stop = self.__stop.wait(Transmitter._INTERVAL - time.time() % Transmitter._INTERVAL)
             if stop:
@@ -249,7 +259,9 @@ class Transmitter(threading.Thread):
             self.agstate.mlp1_if_alarm = self.agcontrol.fault
             self.comm.write(self.agstate.data)
             t = datetime.now(tz=timezone.utc)
-            db.execute('INSERT INTO xmt (timestamp,data) VALUES (?,?)', (t.timestamp(), self.agstate.data))
-            db.commit()
+            if db is not None:
+                db.execute('INSERT INTO xmt (timestamp,data) VALUES (?,?)', (t.timestamp(), self.agstate.data))
+                db.commit()
             self.logger.info('xmtr: {}'.format(t))
-        db.close()
+        if db is not None:
+            db.close()
